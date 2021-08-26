@@ -1,14 +1,11 @@
 <?php
+  define('INSTALLER', 'install.php');
+
   if (!file_exists('config.php')) {
-    header('Location: install.php');
+    header('Location: ' . INSTALLER);
     exit();
-  } elseif (file_exists('install.php')) {
-    unlink('install.php');
-    if (file_exists('install.php')) {
-      $deleteInstaller = true;
-    }
-  } else {
-    $deleteInstaller = false;
+  } elseif (file_exists(INSTALLER) && is_writable(INSTALLER)) {
+    unlink(INSTALLER);
   }
 ?>
 <!DOCTYPE html>
@@ -41,8 +38,8 @@
         <div id="main">
           <hr />
           <?php
-            if ($deleteInstaller) {
-              echo '<p class="status-error">Your LibreDoc instance is installed. Delete the file <em>install.php</em> for security reasons.</p><br/>';
+            if (file_exists(INSTALLER)) {
+              echo '<p class="status-error">Your LibreDoc instance is installed. Delete the file <em>' . INSTALLER . '</em> for security reasons.</p><br/>';
             }
           ?>
           <form action="search.php" method="get">
