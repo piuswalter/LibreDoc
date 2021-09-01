@@ -4,7 +4,7 @@
   session_start();
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>LibreDoc</title>
 

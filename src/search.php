@@ -2,7 +2,7 @@
   require_once('config.php');
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>LibreDoc</title>
 

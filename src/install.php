@@ -1,7 +1,7 @@
 <?php
   if (!isset($_GET['install'])) {
 ?>
-<html>
+<html lang="en">
   <head>
     <title>LibreDoc</title>
 
@@ -172,7 +172,7 @@
     exit();
   } else {
 ?>
-<html>
+<html lang="en">
   <head>
     <title>LibreDoc</title>
 
