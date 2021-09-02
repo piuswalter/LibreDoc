@@ -1,6 +1,7 @@
 <?php
   if (!isset($_GET['install'])) {
 ?>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <title>LibreDoc</title>
@@ -172,6 +173,7 @@
     exit();
   } else {
 ?>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <title>LibreDoc</title>
