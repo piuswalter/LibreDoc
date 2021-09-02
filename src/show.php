@@ -104,7 +104,7 @@
         $descriptionOutput = str_replace('&lt;/code&gt;', '</code>', $descriptionOutput);
         $descriptionOutput = str_replace('&quot;', '"', $descriptionOutput);
         $pattern = '/&lt;a href=["\'](.*?)["\']&gt;/im';
-        $replacement = '<a target="_blank" href="$1">';
+        $replacement = '<a target="_blank" href="$1" rel="noopener">';
         $descriptionOutput = preg_replace($pattern, $replacement, $descriptionOutput);
         $descriptionOutput = str_replace('&lt;/a&gt;', '</a>', $descriptionOutput);
 

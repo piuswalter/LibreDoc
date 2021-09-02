@@ -27,9 +27,9 @@
         <div id="sidebar">
           <ul class="sidebar">
             <li><strong>Quick links</strong></li>
-            <li><a target="_blank" href="https://libredoc.eu/">LibreDoc Website</a></li>
-            <li><a target="_blank" href="https://demo.libredoc.eu/">LibreDoc Demo</a></li>
-            <li><a target="_blank" href="https://code.libredoc.eu/">LibreDoc Code</a></li>
+            <li><a target="_blank" href="https://libredoc.eu/" rel="noopener">LibreDoc Website</a></li>
+            <li><a target="_blank" href="https://demo.libredoc.eu/" rel="noopener">LibreDoc Demo</a></li>
+            <li><a target="_blank" href="https://code.libredoc.eu/" rel="noopener">LibreDoc Code</a></li>
           </ul>
         </div>
 
