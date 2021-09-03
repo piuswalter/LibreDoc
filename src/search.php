@@ -69,7 +69,9 @@
             // calculate amount of filtered documents
             $sql = $pdo->prepare("SELECT COUNT(id) AS amount FROM documents WHERE id IN (SELECT MAX(id) AS id FROM documents GROUP BY id_document) AND description LIKE ? AND status_deprecated = 0 ORDER BY heading;");
             $sql->execute([$search]);
-            while ($row = $sql->fetch()) $amount = $row['amount'];
+            while ($row = $sql->fetch()) {
+              $amount = $row['amount'];
+            }
 
             // select the right sql statement for reading documents
             if (!$emptySearch) {

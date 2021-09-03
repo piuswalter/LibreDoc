@@ -169,10 +169,12 @@
           <?php
             } else {
               echo '<pre>';
-              if ($statusDeprecated)
+              if ($statusDeprecated) {
                 echo '<div class="banner banner-deprecated">Deprecated document!</div><br />';
-              if ($statusNeedReview)
+              }
+              if ($statusNeedReview) {
                 echo '<div class="banner banner-need-review">Document needs review!</div><br />';
+              }
               echo $descriptionOutput;
               echo '<br />';
               echo '<br />';
