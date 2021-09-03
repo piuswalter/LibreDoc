@@ -38,7 +38,7 @@
           <form action="install.php?install" method="post">
             <h4>Database</h4>
             <p>Enter the data for connecting the database here.</p>
-            <table>
+            <table role="none">
               <tr>
                 <td width="100px"><label for="database-host">Host</label></td>
                 <td><input id="database-host" name="database-host" type="text" value="localhost" /></td>
@@ -59,14 +59,14 @@
             <p>All required tables will be force created. That meens if they exist before, they will be deleted.</p>
             <h4>LibreDoc</h4>
             <p>Enter the name of the standard author here. This will be displayed at the end of each created document.</p>
-            <table>
+            <table role="none">
               <tr>
                 <td width="100px"><label for="author">Author</label></td>
                 <td><input id="author" name="author" type="text" /></td>
               </tr>
             </table>
             <p>Assign a secure password here to access and edit confidential documents.</p>
-            <table>
+            <table role="none">
               <tr>
                 <td width="100px"><label for="password">Password</label></td>
                 <td><input id="password" name="password" type="text" autocomplete="off" /></td>
