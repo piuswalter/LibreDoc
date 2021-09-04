@@ -79,6 +79,10 @@ pre {
   width: 100%;
 }
 
+.w-100p {
+  width: 100px;
+}
+
 .h-400p {
   height:400px;
 }

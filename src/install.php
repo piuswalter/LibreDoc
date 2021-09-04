@@ -40,7 +40,7 @@
             <p>Enter the data for connecting the database here.</p>
             <table role="none">
               <tr>
-                <td width="100px"><label for="database-host">Host</label></td>
+                <td class="w-100p"><label for="database-host">Host</label></td>
                 <td><input id="database-host" name="database-host" type="text" value="localhost" /></td>
               </tr>
               <tr>
@@ -61,14 +61,14 @@
             <p>Enter the name of the standard author here. This will be displayed at the end of each created document.</p>
             <table role="none">
               <tr>
-                <td width="100px"><label for="author">Author</label></td>
+                <td class="w-100p"><label for="author">Author</label></td>
                 <td><input id="author" name="author" type="text" /></td>
               </tr>
             </table>
             <p>Assign a secure password here to access and edit confidential documents.</p>
             <table role="none">
               <tr>
-                <td width="100px"><label for="password">Password</label></td>
+                <td class="w-100p"><label for="password">Password</label></td>
                 <td><input id="password" name="password" type="text" autocomplete="off" /></td>
               </tr>
             </table>
