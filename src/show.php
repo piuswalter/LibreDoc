@@ -4,7 +4,7 @@
   session_start();
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>LibreDoc</title>
 
@@ -104,7 +104,7 @@
         $descriptionOutput = str_replace('&lt;/code&gt;', '</code>', $descriptionOutput);
         $descriptionOutput = str_replace('&quot;', '"', $descriptionOutput);
         $pattern = '/&lt;a href=["\'](.*?)["\']&gt;/im';
-        $replacement = '<a target="_blank" href="$1">';
+        $replacement = '<a target="_blank" href="$1" rel="noopener">';
         $descriptionOutput = preg_replace($pattern, $replacement, $descriptionOutput);
         $descriptionOutput = str_replace('&lt;/a&gt;', '</a>', $descriptionOutput);
 
@@ -169,10 +169,12 @@
           <?php
             } else {
               echo '<pre>';
-              if ($statusDeprecated)
+              if ($statusDeprecated) {
                 echo '<div class="banner banner-deprecated">Deprecated document!</div><br />';
-              if ($statusNeedReview)
+              }
+              if ($statusNeedReview) {
                 echo '<div class="banner banner-need-review">Document needs review!</div><br />';
+              }
               echo $descriptionOutput;
               echo '<br />';
               echo '<br />';

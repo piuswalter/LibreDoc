@@ -4,7 +4,7 @@
   session_start();
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>LibreDoc</title>
 
@@ -35,7 +35,9 @@
           // get document confidential status from database 
           $sql = $pdo->prepare("SELECT confidential FROM documents WHERE id = ?;");
           $sql->execute([$id]);
-          while ($row = $sql->fetch()) $isConfidential = $row['confidential'];
+          while ($row = $sql->fetch()) {
+            $isConfidential = $row['confidential'];
+          }
 
           // check if document is confidential and session is set
           if ($isConfidential && !isset($_SESSION['loggedIn'])) {

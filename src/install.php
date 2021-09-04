@@ -1,7 +1,8 @@
 <?php
   if (!isset($_GET['install'])) {
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <title>LibreDoc</title>
 
@@ -26,9 +27,9 @@
         <div id="sidebar">
           <ul class="sidebar">
             <li><strong>Quick links</strong></li>
-            <li><a target="_blank" href="https://libredoc.eu/">LibreDoc Website</a></li>
-            <li><a target="_blank" href="https://demo.libredoc.eu/">LibreDoc Demo</a></li>
-            <li><a target="_blank" href="https://code.libredoc.eu/">LibreDoc Code</a></li>
+            <li><a target="_blank" href="https://libredoc.eu/" rel="noopener">LibreDoc Website</a></li>
+            <li><a target="_blank" href="https://demo.libredoc.eu/" rel="noopener">LibreDoc Demo</a></li>
+            <li><a target="_blank" href="https://code.libredoc.eu/" rel="noopener">LibreDoc Code</a></li>
           </ul>
         </div>
 
@@ -37,9 +38,9 @@
           <form action="install.php?install" method="post">
             <h4>Database</h4>
             <p>Enter the data for connecting the database here.</p>
-            <table>
+            <table role="none">
               <tr>
-                <td width="100px"><label for="database-host">Host</label></td>
+                <td class="w-100p"><label for="database-host">Host</label></td>
                 <td><input id="database-host" name="database-host" type="text" value="localhost" /></td>
               </tr>
               <tr>
@@ -58,16 +59,16 @@
             <p>All required tables will be force created. That meens if they exist before, they will be deleted.</p>
             <h4>LibreDoc</h4>
             <p>Enter the name of the standard author here. This will be displayed at the end of each created document.</p>
-            <table>
+            <table role="none">
               <tr>
-                <td width="100px"><label for="author">Author</label></td>
+                <td class="w-100p"><label for="author">Author</label></td>
                 <td><input id="author" name="author" type="text" /></td>
               </tr>
             </table>
             <p>Assign a secure password here to access and edit confidential documents.</p>
-            <table>
+            <table role="none">
               <tr>
-                <td width="100px"><label for="password">Password</label></td>
+                <td class="w-100p"><label for="password">Password</label></td>
                 <td><input id="password" name="password" type="text" autocomplete="off" /></td>
               </tr>
             </table>
@@ -172,7 +173,8 @@
     exit();
   } else {
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <title>LibreDoc</title>
 

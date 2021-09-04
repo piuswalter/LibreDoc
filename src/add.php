@@ -2,7 +2,7 @@
   require_once('config.php');
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <title>LibreDoc</title>
 
@@ -31,7 +31,9 @@
 
           // get last document id and generate next one
           $sql = "SELECT MAX(id_document) AS id_document_max FROM documents;";
-          foreach ($pdo->query($sql) as $row) $idDocumentMax = $row['id_document_max'];
+          foreach ($pdo->query($sql) as $row) {
+            $idDocumentMax = $row['id_document_max'];
+          }
           $idDocumentMax++;
 
           // get actual date and time

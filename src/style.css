@@ -7,7 +7,7 @@ html, body {
 
 body {
   width: 100%;
-  font-family: "Georgia";
+  font-family: "Georgia", serif;
 }
 
 a {
@@ -77,6 +77,10 @@ pre {
 
 .w-100 {
   width: 100%;
+}
+
+.w-100p {
+  width: 100px;
 }
 
 .h-400p {
