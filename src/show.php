@@ -2,6 +2,115 @@
   require_once('config.php');
 
   session_start();
+
+  if (isset($_GET['id']) && is_numeric($_GET['id']) && (intval($_GET['id']) > 0)) {
+    $id = $_GET['id'];
+
+    // check if logout is pressed
+    if (isset($_GET['logout'])) {
+      session_destroy();
+
+      header('Location: show.php?id=' . $id);
+      exit();
+    }
+
+    // database connection
+    try {
+      $pdo = new PDO('mysql:host=' . DATABASE_HOST . ';dbname=' . DATABASE_NAME, DATABASE_USERNAME, DATABASE_PASSWORD);
+    } catch (PDOException $ex) {
+      echo 'Error while connecting to database.<br />';
+      echo $ex;
+      exit();
+    }
+    $pdo->exec('SET NAMES utf8mb4');
+
+    // read required data from database
+    $sql = $pdo->prepare("SELECT d.id, d.id_document, d.revision, d.date_created, d.time_created, d.heading, d.description, d.status_deprecated, d.status_need_review, d.confidential, a.name, COUNT(d.id) AS amount FROM documents AS d JOIN authors AS a ON d.id_author=a.id WHERE d.id = ?;");
+    $sql->execute([$id]);
+
+    while ($row = $sql->fetch()) {
+      $id = $row['id'];
+      $idDocument = $row['id_document'];
+      $revision = $row['revision'];
+      $date_created = $row['date_created'];
+      $time_created = $row['time_created'];
+      $heading = $row['heading'];
+      $description = $row['description'];
+      $statusDeprecated = $row['status_deprecated'];
+      $statusNeedReview = $row['status_need_review'];
+      $isConfidential = $row['confidential'];
+      $author = $row['name'];
+      $amount = intval($row['amount']);
+    }
+
+    // check if document id is available in the database
+    if ($amount === 0) {
+      header('Location: index.php');
+      exit();
+    }
+
+    // undoing convertion of special html characters
+    $descriptionOutput = htmlspecialchars($description);
+    $descriptionOutput = str_replace('&lt;b&gt;', '<b>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/b&gt;', '</b>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;strong&gt;', '<strong>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/strong&gt;', '</strong>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;i&gt;', '<i>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/i&gt;', '</i>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;em&gt;', '<em>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/em&gt;', '</em>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;u&gt;', '<u>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/u&gt;', '</u>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;s&gt;', '<s>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/s&gt;', '</s>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;del&gt;', '<del>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/del&gt;', '</del>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;ins&gt;', '<ins>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/ins&gt;', '</ins>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;sub&gt;', '<sub>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/sub&gt;', '</sub>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;sup&gt;', '<sup>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/sup&gt;', '</sup>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;small&gt;', '<small>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/small&gt;', '</small>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;big&gt;', '<big>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/big&gt;', '</big>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;h1&gt;', '<h1>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/h1&gt;', '</h1>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;h2&gt;', '<h2>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/h2&gt;', '</h2>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;h3&gt;', '<h3>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/h3&gt;', '</h3>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;h4&gt;', '<h4>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/h4&gt;', '</h4>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;h5&gt;', '<h5>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/h5&gt;', '</h5>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;h6&gt;', '<h6>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/h6&gt;', '</h6>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;code&gt;', '<code>', $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/code&gt;', '</code>', $descriptionOutput);
+    $descriptionOutput = str_replace('&quot;', '"', $descriptionOutput);
+    $pattern = '/&lt;a href=["\'](.*?)["\']&gt;/im';
+    $replacement = '<a target="_blank" href="$1" rel="noopener">';
+    $descriptionOutput = preg_replace($pattern, $replacement, $descriptionOutput);
+    $descriptionOutput = str_replace('&lt;/a&gt;', '</a>', $descriptionOutput);
+
+    if ($isConfidential) {
+      // check password and show confidential content
+      $wrongCredentials = false;
+      if (isset($_POST['password']) && ($_POST['password'] === CONFIDENTIAL_PASSWORD)) {
+        $_SESSION['loggedIn'] = true;
+      } elseif (isset($_POST['password'])) {
+        $wrongCredentials = true;
+      }
+    }
+
+    // close database connection
+    $pdo = NULL;
+  } else {
+    header('Location: index.php');
+    exit();
+  }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,128 +122,21 @@
     <link rel="icon" href="logo.svg" />
 
     <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
-  </head>
-  <body>
+
     <?php
-      if (isset($_GET['id']) && is_numeric($_GET['id']) && (intval($_GET['id']) > 0)) {
-        $id = $_GET['id'];
-
-        // check if logout is pressed
-        if (isset($_GET['logout'])) {
-          session_destroy();
-
-          header('Location: show.php?id=' . $id);
-          exit();
-        }
-
-        // database connection
-        try {
-          $pdo = new PDO('mysql:host=' . DATABASE_HOST . ';dbname=' . DATABASE_NAME, DATABASE_USERNAME, DATABASE_PASSWORD);
-        } catch (PDOException $ex) {
-          echo 'Error while connecting to database.<br />';
-          echo $ex;
-          exit();
-        }
-        $pdo->exec('SET NAMES utf8mb4');
-
-        // read required data from database
-        $sql = $pdo->prepare("SELECT d.id, d.id_document, d.revision, d.date_created, d.time_created, d.heading, d.description, d.status_deprecated, d.status_need_review, d.confidential, a.name, COUNT(d.id) AS amount FROM documents AS d JOIN authors AS a ON d.id_author=a.id WHERE d.id = ?;");
-        $sql->execute([$id]);
-
-        while ($row = $sql->fetch()) {
-          $id = $row['id'];
-          $idDocument = $row['id_document'];
-          $revision = $row['revision'];
-          $date_created = $row['date_created'];
-          $time_created = $row['time_created'];
-          $heading = $row['heading'];
-          $description = $row['description'];
-          $statusDeprecated = $row['status_deprecated'];
-          $statusNeedReview = $row['status_need_review'];
-          $isConfidential = $row['confidential'];
-          $author = $row['name'];
-          $amount = intval($row['amount']);
-        }
-
-        // check if document id is available in the database
-        if ($amount === 0) {
-          header('Location: index.php');
-          exit();
-        }
-
-        // undoing convertion of special html characters
-        $descriptionOutput = htmlspecialchars($description);
-        $descriptionOutput = str_replace('&lt;b&gt;', '<b>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/b&gt;', '</b>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;strong&gt;', '<strong>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/strong&gt;', '</strong>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;i&gt;', '<i>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/i&gt;', '</i>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;em&gt;', '<em>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/em&gt;', '</em>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;u&gt;', '<u>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/u&gt;', '</u>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;s&gt;', '<s>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/s&gt;', '</s>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;del&gt;', '<del>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/del&gt;', '</del>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;ins&gt;', '<ins>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/ins&gt;', '</ins>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;sub&gt;', '<sub>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/sub&gt;', '</sub>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;sup&gt;', '<sup>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/sup&gt;', '</sup>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;small&gt;', '<small>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/small&gt;', '</small>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;big&gt;', '<big>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/big&gt;', '</big>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;h1&gt;', '<h1>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/h1&gt;', '</h1>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;h2&gt;', '<h2>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/h2&gt;', '</h2>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;h3&gt;', '<h3>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/h3&gt;', '</h3>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;h4&gt;', '<h4>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/h4&gt;', '</h4>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;h5&gt;', '<h5>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/h5&gt;', '</h5>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;h6&gt;', '<h6>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/h6&gt;', '</h6>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;code&gt;', '<code>', $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/code&gt;', '</code>', $descriptionOutput);
-        $descriptionOutput = str_replace('&quot;', '"', $descriptionOutput);
-        $pattern = '/&lt;a href=["\'](.*?)["\']&gt;/im';
-        $replacement = '<a target="_blank" href="$1" rel="noopener">';
-        $descriptionOutput = preg_replace($pattern, $replacement, $descriptionOutput);
-        $descriptionOutput = str_replace('&lt;/a&gt;', '</a>', $descriptionOutput);
-
-        if ($isConfidential) {
-          // check password and show confidential content
-          $wrongCredentials = false;
-          if (isset($_POST['password']) && ($_POST['password'] === CONFIDENTIAL_PASSWORD)) {
-            $_SESSION['loggedIn'] = true;
-          } elseif (isset($_POST['password'])) {
-            $wrongCredentials = true;
-          }
-
-          // add confidential required styles
-          echo '
-            <style>
-              .confidential-logo { height: 30px; }
-              .wrong-credentials { color: DarkRed; }
-              #header { height: 190px; }
-              #header-line { background-color: DarkRed; }
-            </style>
-          ';
-        }
-
-        // close database connection
-        $pdo = NULL;
-      } else {
-        header('Location: index.php');
-        exit();
+      if ($isConfidential) {
+    ?>
+    <style>
+      .confidential-logo { height: 30px; }
+      .wrong-credentials { color: DarkRed; }
+      #header { height: 190px; }
+      #header-line { background-color: DarkRed; }
+    </style>
+    <?php
       }
     ?>
+  </head>
+  <body>
     <div id="header-line"></div>
 
     <div id="content">

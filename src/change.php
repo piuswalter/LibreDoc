@@ -2,6 +2,122 @@
   require_once('config.php');
 
   session_start();
+
+  if (isset($_GET['id']) && isset($_POST['heading']) && isset($_POST['description'])) {
+    $id = $_GET['id'];
+    $heading = $_POST['heading'];
+    $description = $_POST['description'];
+
+    if ($heading != '') {
+      // database connection
+      try {
+        $pdo = new PDO('mysql:host=' . DATABASE_HOST . ';dbname=' . DATABASE_NAME, DATABASE_USERNAME, DATABASE_PASSWORD);
+      } catch (PDOException $ex) {
+        echo 'Error while connecting to database.<br />';
+        echo $ex;
+        exit();
+      }
+      $pdo->exec('SET NAMES utf8mb4');
+
+      // get document confidential status from database 
+      $sql = $pdo->prepare("SELECT confidential FROM documents WHERE id = ?;");
+      $sql->execute([$id]);
+      while ($row = $sql->fetch()) {
+        $isConfidential = $row['confidential'];
+      }
+
+      // check if document is confidential and session is set
+      if ($isConfidential && !isset($_SESSION['loggedIn'])) {
+        header('Location: change.php?id=' . $id);
+        exit();
+      }
+
+      // get last revision and document id of document
+      $sql = $pdo->prepare("SELECT id_document, MAX(revision) AS revision_max FROM documents WHERE id_document = (SELECT id_document FROM documents WHERE id = ?);");
+      $sql->execute([$id]);
+      while ($row = $sql->fetch()) {
+        $idDocument = $row['id_document'];
+        $revisionMax = $row['revision_max'];
+      }
+      $revisionMax++;
+
+      // get actual date and time
+      $dateCreated = date('Y-m-d');
+      $timeCreated = date('H:i:s');
+
+      // insert document into database
+      $sql = $pdo->prepare("INSERT INTO documents (id, id_document, id_author, revision, date_created, time_created, heading, description, status_deprecated, status_need_review, confidential) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+      $sql->execute([$idDocument, 1, $revisionMax, $dateCreated, $timeCreated, $heading, $description, 0, 0, 0]);
+      $addedDocumentId = $pdo->lastInsertId();
+
+      // close database connection
+      $pdo = NULL;
+
+      // forward to updated document
+      header('Location: show.php?id=' . $addedDocumentId);
+      exit();
+    } else {
+      header('Location: change.php?id=' . $id);
+      exit();
+    }
+  } else {
+    if (isset($_GET['id']) && is_numeric($_GET['id']) && (intval($_GET['id']) > 0)) {
+      $id = $_GET['id'];
+
+      // check if logout is pressed
+      if (isset($_GET['logout'])) {
+        session_destroy();
+
+        header('Location: change.php?id=' . $id);
+        exit();
+      }
+
+      // database connection
+      try {
+        $pdo = new PDO('mysql:host=' . DATABASE_HOST . ';dbname=' . DATABASE_NAME, DATABASE_USERNAME, DATABASE_PASSWORD);
+      } catch (PDOException $ex) {
+        echo 'Error while connecting to database.<br />';
+        echo $ex;
+        exit();
+      }
+      $pdo->exec('SET NAMES utf8mb4');
+
+      // read document from database
+      $sql = $pdo->prepare("SELECT heading, description, confidential FROM documents WHERE id LIKE ?;");
+      $sql->execute([$id]);
+      while ($row = $sql->fetch()) {
+        $heading = $row["heading"];
+        $description = $row["description"];
+        $isConfidential = $row["confidential"];
+      }
+
+      // close database connection
+      $pdo = NULL;
+
+      if ($isConfidential) {
+        // check password and show confidential content
+        $wrongCredentials = false;
+        if (isset($_POST['password']) && ($_POST['password'] === CONFIDENTIAL_PASSWORD)) {
+          $_SESSION['loggedIn'] = true;
+        } elseif (isset($_POST['password'])) {
+          $wrongCredentials = true;
+        }
+
+        // add confidential required styles
+        echo '
+          <style>
+            .confidential-logo { height: 30px; }
+            .wrong-credentials { color: DarkRed; }
+            #header { height: 190px; }
+            #header-line { background-color: DarkRed; }
+          </style>
+        ';
+      }
+    } else {
+      header("Location: index.php");
+      exit();
+    }
+  }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,123 +131,6 @@
     <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
   </head>
   <body>
-    <?php
-      if (isset($_GET['id']) && isset($_POST['heading']) && isset($_POST['description'])) {
-        $id = $_GET['id'];
-        $heading = $_POST['heading'];
-        $description = $_POST['description'];
-
-        if ($heading != '') {
-          // database connection
-          try {
-            $pdo = new PDO('mysql:host=' . DATABASE_HOST . ';dbname=' . DATABASE_NAME, DATABASE_USERNAME, DATABASE_PASSWORD);
-          } catch (PDOException $ex) {
-            echo 'Error while connecting to database.<br />';
-            echo $ex;
-            exit();
-          }
-          $pdo->exec('SET NAMES utf8mb4');
-
-          // get document confidential status from database 
-          $sql = $pdo->prepare("SELECT confidential FROM documents WHERE id = ?;");
-          $sql->execute([$id]);
-          while ($row = $sql->fetch()) {
-            $isConfidential = $row['confidential'];
-          }
-
-          // check if document is confidential and session is set
-          if ($isConfidential && !isset($_SESSION['loggedIn'])) {
-            header('Location: change.php?id=' . $id);
-            exit();
-          }
-
-          // get last revision and document id of document
-          $sql = $pdo->prepare("SELECT id_document, MAX(revision) AS revision_max FROM documents WHERE id_document = (SELECT id_document FROM documents WHERE id = ?);");
-          $sql->execute([$id]);
-          while ($row = $sql->fetch()) {
-            $idDocument = $row['id_document'];
-            $revisionMax = $row['revision_max'];
-          }
-          $revisionMax++;
-
-          // get actual date and time
-          $dateCreated = date('Y-m-d');
-          $timeCreated = date('H:i:s');
-
-          // insert document into database
-          $sql = $pdo->prepare("INSERT INTO documents (id, id_document, id_author, revision, date_created, time_created, heading, description, status_deprecated, status_need_review, confidential) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
-          $sql->execute([$idDocument, 1, $revisionMax, $dateCreated, $timeCreated, $heading, $description, 0, 0, 0]);
-          $addedDocumentId = $pdo->lastInsertId();
-
-          // close database connection
-          $pdo = NULL;
-
-          // forward to updated document
-          header('Location: show.php?id=' . $addedDocumentId);
-          exit();
-        } else {
-          header('Location: change.php?id=' . $id);
-          exit();
-        }
-      } else {
-        if (isset($_GET['id']) && is_numeric($_GET['id']) && (intval($_GET['id']) > 0)) {
-          $id = $_GET['id'];
-
-          // check if logout is pressed
-          if (isset($_GET['logout'])) {
-            session_destroy();
-
-            header('Location: change.php?id=' . $id);
-            exit();
-          }
-
-          // database connection
-          try {
-            $pdo = new PDO('mysql:host=' . DATABASE_HOST . ';dbname=' . DATABASE_NAME, DATABASE_USERNAME, DATABASE_PASSWORD);
-          } catch (PDOException $ex) {
-            echo 'Error while connecting to database.<br />';
-            echo $ex;
-            exit();
-          }
-          $pdo->exec('SET NAMES utf8mb4');
-
-          // read document from database
-          $sql = $pdo->prepare("SELECT heading, description, confidential FROM documents WHERE id LIKE ?;");
-          $sql->execute([$id]);
-          while ($row = $sql->fetch()) {
-            $heading = $row["heading"];
-            $description = $row["description"];
-            $isConfidential = $row["confidential"];
-          }
-
-          // close database connection
-          $pdo = NULL;
-
-          if ($isConfidential) {
-            // check password and show confidential content
-            $wrongCredentials = false;
-            if (isset($_POST['password']) && ($_POST['password'] === CONFIDENTIAL_PASSWORD)) {
-              $_SESSION['loggedIn'] = true;
-            } elseif (isset($_POST['password'])) {
-              $wrongCredentials = true;
-            }
-  
-            // add confidential required styles
-            echo '
-              <style>
-                .confidential-logo { height: 30px; }
-                .wrong-credentials { color: DarkRed; }
-                #header { height: 190px; }
-                #header-line { background-color: DarkRed; }
-              </style>
-            ';
-          }
-        } else {
-          header("Location: index.php");
-          exit();
-        }
-      }
-    ?>
     <div id="header-line"></div>
 
     <div id="content">
